@@ -10,7 +10,7 @@ L["body_found_" .. roles.JIMBO.abbr] = "They were Jimbo!?"
 L["search_role_" .. roles.JIMBO.abbr] = "This person was Jimbo!?"
 L["target_" .. roles.JIMBO.name] = "Jimbo"
 L["ttt2_desc_" .. roles.JIMBO.name] = [[
-Jimbo is a Jester/Swapper role that will resurrect themselves and their killer as jimbo.
+Jimbo is a Jester/Swapper role that will resurrect themselves and their killer as Jimbo.
 Jimbo wins if they get killed enough times and their killer's death causes the round to end!]]
 
 L["label_jimbo_entity_damage"] = "Jimbo can damage entities"

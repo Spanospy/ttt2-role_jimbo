@@ -76,6 +76,7 @@ if SERVER then
         else
             roles.JIMBO.targetScore = cvFixToTrick:GetInt()
         end
+		roles.JIMBO.killers = {}
 		roles.JIMBO.SyncScores(plys)
 	end)
 	
@@ -183,11 +184,11 @@ if SERVER then
 		local jimbo_health = cvJimboHealth:GetInt()
 		local jimbo_delay = cvJimboDelay:GetInt()
 		
-		if attacker:GetSubRole() == ROLE_JIMBO then
+		if attacker:GetSubRole() == ROLE_JIMBO or roles.JIMBO.killers[attacker:UserID()] == 1 then
 			--Just revive the killed Jimbo.
-			--No, you DON'T get a point for killing >:(
+			--No, you DON'T get extra points >:(
 			roles.JIMBO.Revive(victim, jimbo_delay, jimbo_health)
-			roles.JESTER.SpawnJesterConfetti(victim)
+			roles.JIMBO.SpawnJesterConfetti(victim, 100)
 			return
 		end
 		
@@ -196,13 +197,14 @@ if SERVER then
 		-- Handle the killers swap to their new life of Jimbo
 		attacker:Kill()
 		roles.JIMBO.Revive(attacker, killer_delay, killer_health)
+		roles.JIMBO.killers[attacker:UserID()] = 1
 
 		attacker:PrintMessage(HUD_PRINTCENTER, "notify_jimbo_killer")
 
 		-- Handle the killed Jimbo's revival
 		roles.JIMBO.Revive(victim, jimbo_delay, jimbo_health)
 
-		roles.JESTER.SpawnJesterConfetti(victim)
+		roles.JIMBO.SpawnJesterConfetti(victim, 100 + roles.JIMBO.currentScore) --TODO - test if the score should influence the pitch more
 
 		--TODO - event for successful trick?
 		roles.JIMBO.currentScore = roles.JIMBO.currentScore + 1
@@ -210,7 +212,7 @@ if SERVER then
 		JimboCheckForWin()
 	end)
 
-	-- hide the jimbo as a normal jester
+	-- hide the Jimbo as a normal jester
 	hook.Add("TTT2JesterModifySyncedRole", "JimboHideAsJester", function(_, syncPly)
 		if syncPly:GetSubRole() ~= ROLE_JIMBO then return end
 

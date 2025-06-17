@@ -40,6 +40,14 @@ function roles.JIMBO.SyncScores(plys)
 	
 end
 
+function roles.JIMBO.SpawnConfetti(ply, pitch)
+	net.Start("NewConfetti")
+	net.WriteEntity(ply)
+	net.Broadcast()
+
+	ply:EmitSound("ttt2/birthdayparty.mp3", 75, pitch)
+end
+
 net.Receive("TTT2RequestJimboStats", function(len, ply)
 	roles.JIMBO.SyncScores(ply)
 end)
