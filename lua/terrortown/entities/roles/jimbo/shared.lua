@@ -188,7 +188,7 @@ if SERVER then
 			--Just revive the killed Jimbo.
 			--No, you DON'T get extra points >:(
 			roles.JIMBO.Revive(victim, jimbo_delay, jimbo_health)
-			roles.JIMBO.SpawnJesterConfetti(victim, 100)
+			roles.JIMBO.SpawnConfetti(victim, 100)
 			return
 		end
 		
@@ -204,7 +204,7 @@ if SERVER then
 		-- Handle the killed Jimbo's revival
 		roles.JIMBO.Revive(victim, jimbo_delay, jimbo_health)
 
-		roles.JIMBO.SpawnJesterConfetti(victim, 100 + roles.JIMBO.currentScore) --TODO - test if the score should influence the pitch more
+		roles.JIMBO.SpawnConfetti(victim, 100 + roles.JIMBO.currentScore) --TODO - test if the score should influence the pitch more
 
 		--TODO - event for successful trick?
 		roles.JIMBO.currentScore = roles.JIMBO.currentScore + 1
