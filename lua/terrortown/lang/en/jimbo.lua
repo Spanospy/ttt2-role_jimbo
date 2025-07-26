@@ -13,10 +13,13 @@ L["ttt2_desc_" .. roles.JIMBO.name] = [[
 Jimbo is a Jester/Swapper role that will resurrect themselves and their killer as Jimbo.
 Jimbo wins if they get killed enough times and their killer's death causes the round to end!]]
 
+L["label_jimbo_sounds"] = "Jimbo uses Balatro sounds"
+L["label_jimbo_sounds"] = "Confetti spawns from a killed Jimbo"
 L["label_jimbo_entity_damage"] = "Jimbo can damage entities"
 L["label_jimbo_environmental_damage"] = "Jimbo receives environmental damage"
 L["label_jimbo_respawn_delay"] = "Jimbo's respawn delay in seconds"
-L["label_jimbo_respawn_health"] = "Health jimbo resurrects with"
+L["label_jimbo_respawn_health"] = "Health Jimbo resurrects with"
+L["label_jimbo_king_respawn_health"] = "Override respawn health of original Jimbo"
 L["label_jimbo_killer_delay"] = "Killer's respawn delay in seconds"
 L["label_jimbo_killer_health"] = "Health Jimbo's killer resurrects with"
 L["label_jimbo_min_to_trick"] = "Lower limit of players to be killed by to win"

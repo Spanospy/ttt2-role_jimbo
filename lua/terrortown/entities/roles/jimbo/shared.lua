@@ -29,30 +29,40 @@ function ROLE:PreInitialize()
 	}
 end
 
+function ROLE:Initialize()
+
+	if SERVER then
+		local cvarFlags = {FCVAR_NOTIFY, FCVAR_ARCHIVE}
+
+		CreateConVar("ttt2_jimbo_entity_damage", "1", cvarFlags)
+		CreateConVar("ttt2_jimbo_environmental_damage", "0", cvarFlags)
+
+		roles.JIMBO.cvMinToTrick = CreateConVar("ttt2_jimbo_min_to_trick", 3, cvarFlags)
+		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 9, cvarFlags)
+		roles.JIMBO.cvPctToTrick = CreateConVar("ttt2_jimbo_pct_to_trick", 0.6, cvarFlags)
+		roles.JIMBO.cvFixToTrick = CreateConVar("ttt2_jimbo_fix_to_trick", -1, cvarFlags)
+
+		roles.JIMBO.cvKillerHealth = CreateConVar("ttt2_jimbo_killer_health", "100", cvarFlags)
+		roles.JIMBO.cvKillerDelay = CreateConVar("ttt2_jimbo_killer_delay", "3", cvarFlags)
+		roles.JIMBO.cvJimboHealth = CreateConVar("ttt2_jimbo_respawn_health", "100", cvarFlags)
+		roles.JIMBO.cvJimboKingHealth = CreateConVar("ttt2_jimbo_king_respawn_health", "-1", cvarFlags)
+		roles.JIMBO.cvJimboDelay = CreateConVar("ttt2_jimbo_respawn_delay", "0", cvarFlags)
+
+		roles.JIMBO.cvJimboConfetti = CreateConVar("ttt2_jimbo_confetti", "1", cvarFlags)
+		roles.JIMBO.cvJimboSounds = CreateConVar("ttt2_jimbo_sounds", "1", cvarFlags)
+	end
+
+end
+
 if SERVER then
 
-	local cvarFlags = {FCVAR_NOTIFY, FCVAR_ARCHIVE}
-	CreateConVar("ttt2_jimbo_entity_damage", "1", cvarFlags)
-	CreateConVar("ttt2_jimbo_environmental_damage", "0", cvarFlags)
-	CreateConVar("ttt2_jimbo_respawn_delay", "0", cvarFlags)
-
-	local cvMinToTrick = CreateConVar("ttt2_jimbo_min_to_trick", 3, cvarFlags)	
-	local cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 9, cvarFlags)
-	local cvPctToTrick = CreateConVar("ttt2_jimbo_pct_to_trick", 0.6, cvarFlags)
-	local cvFixToTrick = CreateConVar("ttt2_jimbo_fix_to_trick", -1, cvarFlags)
-
-	local cvKillerHealth = CreateConVar("ttt2_jimbo_killer_health", "100", cvarFlags)
-	local cvKillerDelay = CreateConVar("ttt2_jimbo_killer_delay", "3", cvarFlags)
-	local cvJimboHealth = CreateConVar("ttt2_jimbo_respawn_health", "100", cvarFlags)
-	local cvJimboDelay = CreateConVar("ttt2_jimbo_respawn_delay", "0", cvarFlags)
-	
 	local playerGetAll = player.GetAll
 
 	-- HANDLE WINNING HOOK
 	hook.Add("TTT2PreWinChecker", "JimboCheckWin", function()
 		if roles.JIMBO.shouldWin then
 			roles.JIMBO.shouldWin = false
-			
+
 			--TODO - override the win title box to reflect jimbo's win?
 
 			return TEAM_JESTER
@@ -67,7 +77,14 @@ if SERVER then
 	
 	-- HANDLE ROUND START HOOK
 	hook.Add("TTTBeginRound", "JimboPrepareRound", function()
+
+		local cvMinToTrick = roles.JIMBO.cvMinToTrick
+		local cvMaxToTrick = roles.JIMBO.cvMaxToTrick
+		local cvPctToTrick = roles.JIMBO.cvPctToTrick
+		local cvFixToTrick = roles.JIMBO.cvFixToTrick
+
 		--calculate target score based on cvMinToTrick, cvMaxToTrick, cvPctToTrick & cvFixToTrick
+
 		if cvFixToTrick:GetInt() == -1 then
 			local plys = playerGetAll()
             roles.JIMBO.targetScore = math.ceil(cvPctToTrick:GetFloat() * (#plys - 1))
@@ -77,9 +94,10 @@ if SERVER then
             roles.JIMBO.targetScore = cvFixToTrick:GetInt()
         end
 		roles.JIMBO.killers = {}
+		roles.JIMBO.CrownKing(plys)
 		roles.JIMBO.SyncScores(plys)
 	end)
-	
+
 	local function CountAliveTeams()
 		local aliveTeams = {}
 		local jimboIsAlive = false
@@ -88,9 +106,9 @@ if SERVER then
 		for i = 1, #plys do
 			local ply = plys[i]
 			local team = ply:GetTeam()
-			
+
 			if team == TEAM_JESTER then
-				if jimboIsAlive then continue end -- no need to check other jester roles if we already found at least one jimbo is alive
+				if jimboIsAlive then continue end -- no need to check other jester roles if we already found at least one Jimbo is alive
 				if ply:GetSubRole() == ROLE_JIMBO 
 				and ply:IsTerror() 
 				then 
@@ -115,18 +133,18 @@ if SERVER then
 		hook.Run("TTT2ModifyWinningAlives", aliveTeams)
 		return aliveTeams, jimboIsAlive
 	end
-	
-	local function JimboCheckForWin() -- only triggered when a jimbo swap has occured
-		
-		-- jimbo(s) must have caused enough direct deaths
+
+	local function JimboCheckForWin() -- only triggered when a Jimbo swap has occured
+
+		-- Jimbo(s) must have caused enough direct deaths
 		if roles.JIMBO.currentScore < roles.JIMBO.targetScore then return end
-		
-		--If a jimbo is alive, and one or fewer OTHER teams live, team Jester wins.
-		
+
+		--If a Jimbo is alive, and one or fewer OTHER teams live, team Jester wins.
+
 		local aliveTeams, jimboIsAlive = CountAliveTeams()	
-		
-		if jimboIsAlive ~= true then return end
-		
+
+		if jimboIsAlive ~= true then return end --TODO - do we need this check?
+
 		local checkedTeams = {}
 		local b = 0
 
@@ -147,13 +165,13 @@ if SERVER then
 				return
 			end
 		end
-		
+
 		if b < 2 then 
 			roles.JIMBO.shouldWin = true
 		end
 	end
-	
-	
+
+
 	-- Jimbo doesnt deal or take any damage in relation to players
 	hook.Add("PlayerTakeDamage", "JimboNoDamage", function(ply, inflictor, killer, amount, dmginfo)
 		if roles.SWAPPER.ShouldTakeNoDamage(ply, killer, ROLE_JIMBO)
@@ -164,10 +182,11 @@ if SERVER then
 		end
 	end)
 
-	-- Check if the jimbo can damage entities or be damaged by environmental effects
+	-- Check if the Jimbo can damage entities or be damaged by environmental effects
 	hook.Add("EntityTakeDamage", "JimboEntityNoDamage", function(ply, dmginfo)
 		if roles.SWAPPER.ShouldDealNoEntityDamage(ply, dmginfo, ROLE_JIMBO)
 			or roles.SWAPPER.ShouldTakeEnvironmentalDamage(ply, dmginfo, ROLE_JIMBO)
+			or roles.JIMBO.DamageFailSafe(ply, dmginfo) -- Also check if a Jimbo managed to deal damage to someone
 		then
 			dmginfo:ScaleDamage(0)
 			dmginfo:SetDamage(0)
@@ -175,36 +194,34 @@ if SERVER then
 	end)
 
 	hook.Add("PlayerDeath", "JimboDeath", function(victim, infl, attacker)
-		if victim:GetSubRole() ~= ROLE_JIMBO or not IsValid(attacker)
-			or not attacker:IsPlayer() or victim == attacker
+
+		if victim:GetSubRole() ~= ROLE_JIMBO 	-- victim must be Jimbo
+			or not IsValid(attacker) 			-- attacker must be valid
+			or not attacker:IsPlayer() 			-- attacker must be a player
+			or victim == attacker 				-- victim must not have killed themselves
 		then return end
-		
-		local killer_health = cvKillerHealth:GetInt()
-		local killer_delay = cvKillerDelay:GetInt()
-		local jimbo_health = cvJimboHealth:GetInt()
-		local jimbo_delay = cvJimboDelay:GetInt()
-		
+
 		if attacker:GetSubRole() == ROLE_JIMBO or roles.JIMBO.killers[attacker:UserID()] == 1 then
 			--Just revive the killed Jimbo.
 			--No, you DON'T get extra points >:(
-			roles.JIMBO.Revive(victim, jimbo_delay, jimbo_health)
+			roles.JIMBO.Revive(victim, true)
 			roles.JIMBO.SpawnConfetti(victim, 100)
 			return
 		end
-		
+
 		--TODO - handle weapon swapping? I think it's broken in the swapper role anyway so...
 
 		-- Handle the killers swap to their new life of Jimbo
 		attacker:Kill()
-		roles.JIMBO.Revive(attacker, killer_delay, killer_health)
+		roles.JIMBO.Revive(attacker, false)
 		roles.JIMBO.killers[attacker:UserID()] = 1
 
 		attacker:PrintMessage(HUD_PRINTCENTER, "notify_jimbo_killer")
 
 		-- Handle the killed Jimbo's revival
-		roles.JIMBO.Revive(victim, jimbo_delay, jimbo_health)
+		roles.JIMBO.Revive(victim, true)
 
-		roles.JIMBO.SpawnConfetti(victim, 100 + roles.JIMBO.currentScore) --TODO - test if the score should influence the pitch more
+		roles.JIMBO.SpawnConfetti(victim, math.floor(80 + (roles.JIMBO.currentScore * 8) * 0.8))
 
 		--TODO - event for successful trick?
 		roles.JIMBO.currentScore = roles.JIMBO.currentScore + 1
@@ -218,7 +235,7 @@ if SERVER then
 
 		return {ROLE_JESTER, TEAM_JESTER}
 	end)
-	
+
 end
 
 if CLIENT then
@@ -230,7 +247,7 @@ if CLIENT then
 		JIMBO_DATA.targetScore = net.ReadUInt(8)
 		JIMBO_DATA.requestedScores = false
 	end)
-	
+
 	hook.Add("TTT2UpdateSubrole", "JimboRoleSync", function(_, __, SubRole)
 		if SubRole == ROLE_JIMBO then
 			net.Start("TTT2RequestJimboStats")
@@ -238,31 +255,31 @@ if CLIENT then
 			JIMBO_DATA.requestedScores = true
 		end
 	end)
-	
-	local function UpdateCvarBasedOnCvar(getCvar, setCvar)
+
+	local function UpdateCvarBasedOnCvar(setCvar, getCvar)
 		cvars.ServerConVarGetValue(getCvar, function(exists, value, default)
 			if exists then
 				cvars.ChangeServerConVar(setCvar, value)
 			end
 		end)
 	end
-	
+
 	local function PopulateSwapperCvars()
-		UpdateCvarBasedOnCvar("ttt2_swapper_entity_damage", "ttt2_jimbo_entity_damage")
-		UpdateCvarBasedOnCvar("ttt2_swapper_environmental_damage", "ttt2_jimbo_environmental_damage")
-		UpdateCvarBasedOnCvar("ttt2_swapper_killer_health", "ttt2_jimbo_killer_health")
-		UpdateCvarBasedOnCvar("ttt2_swapper_respawn_health", "ttt2_jimbo_respawn_health")
-		UpdateCvarBasedOnCvar("ttt2_swapper_respawn_delay", "ttt2_jimbo_respawn_delay")
+		UpdateCvarBasedOnCvar("ttt2_jimbo_entity_damage", "ttt2_swapper_entity_damage")
+		UpdateCvarBasedOnCvar("ttt2_jimbo_environmental_damage", "ttt2_swapper_environmental_damage")
+		UpdateCvarBasedOnCvar("ttt2_jimbo_killer_health", "ttt2_swapper_killer_health")
+		UpdateCvarBasedOnCvar("ttt2_jimbo_respawn_health", "ttt2_swapper_respawn_health")
+		UpdateCvarBasedOnCvar("ttt2_jimbo_respawn_delay", "ttt2_swapper_respawn_delay")
 	end
-	
+
 	function ROLE:AddToSettingsMenu(parent)
-	
+
 		--For ttt_force_role debug purposes
 		--print("ROLE_JIMBO IS " .. tostring(ROLE_JIMBO))
-	
+
 		local form = vgui.CreateTTT2Form(parent, "header_roles_additional")
-		
-		--button for auto-setting convars based on the server's swapper convars (if they exist)
+
+		--button for auto-setting convars based on the server's swapper convars
 		if ROLE_SWAPPER then
 			form:MakeButton({
 				label = "label_jimbo_swapper_button",
@@ -270,6 +287,16 @@ if CLIENT then
 				OnClick = PopulateSwapperCvars
 			})
 		end
+
+		form:MakeCheckBox({
+			serverConvar = "ttt2_jimbo_sounds",
+			label = "label_jimbo_sounds"
+		})
+
+		form:MakeCheckBox({
+			serverConvar = "ttt2_jimbo_confetti",
+			label = "label_jimbo_confetti"
+		})
 
 		form:MakeCheckBox({
 			serverConvar = "ttt2_jimbo_entity_damage",
@@ -280,7 +307,7 @@ if CLIENT then
 			serverConvar = "ttt2_jimbo_environmental_damage",
 			label = "label_jimbo_environmental_damage"
 		})
-		
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_respawn_delay",
 			label = "label_jimbo_respawn_delay",
@@ -288,7 +315,7 @@ if CLIENT then
 			max = 60,
 			decimal = 0
 		})
-		
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_respawn_health",
 			label = "label_jimbo_respawn_health",
@@ -296,7 +323,15 @@ if CLIENT then
 			max = 100,
 			decimal = 0
 		})
-		
+
+		form:MakeSlider({
+			serverConvar = "ttt2_jimbo_king_respawn_health",
+			label = "label_jimbo_king_respawn_health",
+			min = -1,
+			max = 100,
+			decimal = 0
+		})
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_killer_delay",
 			label = "label_jimbo_killer_delay",
@@ -304,7 +339,7 @@ if CLIENT then
 			max = 60,
 			decimal = 0
 		})
-		
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_killer_health",
 			label = "label_jimbo_killer_health",
@@ -312,7 +347,7 @@ if CLIENT then
 			max = 100,
 			decimal = 0
 		})
-		
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_min_to_trick",
 			label = "label_jimbo_min_to_trick",
@@ -320,7 +355,7 @@ if CLIENT then
 			max = 32,
 			decimal = 0
 		})
-		
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_max_to_trick",
 			label = "label_jimbo_max_to_trick",
@@ -328,7 +363,7 @@ if CLIENT then
 			max = 32,
 			decimal = 0
 		})
-		
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_pct_to_trick",
 			label = "label_jimbo_pct_to_trick",
@@ -336,7 +371,7 @@ if CLIENT then
 			max = 1,
 			decimal = 1
 		})
-		
+
 		form:MakeSlider({
 			serverConvar = "ttt2_jimbo_fix_to_trick",
 			label = "label_jimbo_fix_to_trick",
