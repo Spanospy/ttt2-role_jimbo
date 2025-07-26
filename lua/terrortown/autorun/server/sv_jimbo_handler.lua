@@ -31,7 +31,7 @@ function roles.JIMBO.Revive(ply, isJimbo)
 
 	if isJimbo then
 
-		if ply == roles.JIMBO.king then
+		if ply == roles.JIMBO.king and roles.JIMBO.cvJimboKingHealth:GetInt() > -1 then
 			health = roles.JIMBO.cvJimboKingHealth:GetInt()
 		else
 			health = roles.JIMBO.cvJimboHealth:GetInt()
