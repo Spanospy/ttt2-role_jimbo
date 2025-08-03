@@ -1,5 +1,6 @@
 util.AddNetworkString("TTT2SyncJimboStats")
 util.AddNetworkString("TTT2RequestJimboStats")
+util.AddNetworkString("TTT2JimboConfetti")
 
 util.PrecacheSound("ttt2/jimbo_mult.mp3")
 util.PrecacheSound("ttt2/jimbo_win.mp3")
@@ -41,7 +42,7 @@ function roles.JIMBO.Revive(ply, isJimbo)
 
 	else
 		health = roles.JIMBO.cvKillerHealth:GetInt()
-		delay = cvKillerDelay:GetInt()
+		delay = roles.JIMBO.cvKillerDelay:GetInt()
 	end
 
 	if health > 0 then
@@ -79,7 +80,7 @@ end
 
 function roles.JIMBO.SpawnConfetti(ply, pitch)
 	if roles.JIMBO.cvJimboConfetti:GetBool() then
-		net.Start("NewConfetti")
+		net.Start("TTT2JimboConfetti")
 		net.WriteEntity(ply)
 		net.Broadcast()
 	end
@@ -97,13 +98,10 @@ function roles.JIMBO.DoWin()
 	end
 end
 
-function roles.JIMBO.DamageFailSafe(ply, dmginfo)
+function roles.JIMBO.DamageFailSafe(ply, attacker)
+	--TODO - refactor to use swapper damage checks?
 
-	local attacker = dmginfo:GetAttacker()
-
-	if not IsValid(attacker) then return false end
-
-	if attacker:GetSubRole() == ROLE_JIMBO then return true end
+	if IsValid(attacker) and attacker:IsPlayer() and attacker:GetSubRole() == ROLE_JIMBO then return true end
 
 end
 

@@ -37,6 +37,8 @@ function ROLE:Initialize()
 		CreateConVar("ttt2_jimbo_entity_damage", "1", cvarFlags)
 		CreateConVar("ttt2_jimbo_environmental_damage", "0", cvarFlags)
 
+		roles.Jimbo.cvExtremeDmgChecks = CreateConVar("ttt2_jimbo_extreme_dmg_checks", 0, cvarFlags)
+
 		roles.JIMBO.cvMinToTrick = CreateConVar("ttt2_jimbo_min_to_trick", 3, cvarFlags)
 		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 9, cvarFlags)
 		roles.JIMBO.cvPctToTrick = CreateConVar("ttt2_jimbo_pct_to_trick", 0.6, cvarFlags)
@@ -50,6 +52,8 @@ function ROLE:Initialize()
 
 		roles.JIMBO.cvJimboConfetti = CreateConVar("ttt2_jimbo_confetti", "1", cvarFlags)
 		roles.JIMBO.cvJimboSounds = CreateConVar("ttt2_jimbo_sounds", "1", cvarFlags)
+
+		roles.JIMBO.cvSpanoAccess = CreateConVar("ttt2_jimbo_give_spano_access", "0", cvarFlags)
 	end
 
 end
@@ -186,8 +190,22 @@ if SERVER then
 	hook.Add("EntityTakeDamage", "JimboEntityNoDamage", function(ply, dmginfo)
 		if roles.SWAPPER.ShouldDealNoEntityDamage(ply, dmginfo, ROLE_JIMBO)
 			or roles.SWAPPER.ShouldTakeEnvironmentalDamage(ply, dmginfo, ROLE_JIMBO)
-			or roles.JIMBO.DamageFailSafe(ply, dmginfo) -- Also check if a Jimbo managed to deal damage to someone
 		then
+			dmginfo:ScaleDamage(0)
+			dmginfo:SetDamage(0)
+		end
+	end)
+
+	hook.Add("TTT2ArmorHandlePlayerTakeDamage", "JimboExtremeDmgCheck", function(ent, infl, att, amount, dmginfo)
+
+		if roles.JIMBO.cvExtremeDmgChecks:GetBool() == false then return end
+		-- We hook here for checking if TTT2 has attributed indirect damage to Jimbo.
+		-- Side effect: TTT2 attributes falls or environmental damage to whoever pushed them recently.
+		-- TODO: We probably don't want a player stuck in a pit because Jimbo pushed them into it.
+
+		if math.floor(dmginfo:GetDamage()) <= 0 then return end
+
+		if roles.JIMBO.DamageFailSafe(ent, att) or roles.JIMBO.DamageFailSafe(ent, infl) then
 			dmginfo:ScaleDamage(0)
 			dmginfo:SetDamage(0)
 		end
@@ -306,6 +324,11 @@ if CLIENT then
 		form:MakeCheckBox({
 			serverConvar = "ttt2_jimbo_environmental_damage",
 			label = "label_jimbo_environmental_damage"
+		})
+
+		form:MakeCheckBox({
+			serverConvar = "ttt2_jimbo_extreme_dmg_checks",
+			label = "label_jimbo_extreme_dmg_checks"
 		})
 
 		form:MakeSlider({
