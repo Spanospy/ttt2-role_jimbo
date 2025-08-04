@@ -82,6 +82,8 @@ function roles.JIMBO.SpawnConfetti(ply, pitch)
 	if roles.JIMBO.cvJimboConfetti:GetBool() then
 		net.Start("TTT2JimboConfetti")
 		net.WriteEntity(ply)
+		net.WriteBool(roles.JIMBO.cvJimboSounds:GetBool())
+		net.WriteUInt(pitch, 8)
 		net.Broadcast()
 	end
 
@@ -94,7 +96,8 @@ end
 
 function roles.JIMBO.DoWin()
 	if roles.JIMBO.cvJimboSounds:GetBool() then
-		EmitSound("ttt2/jimbo_win.mp3")
+		net.Start("TTT2JimboWin")
+		net.Broadcast()
 	end
 end
 

@@ -37,7 +37,7 @@ function ROLE:Initialize()
 		CreateConVar("ttt2_jimbo_entity_damage", "1", cvarFlags)
 		CreateConVar("ttt2_jimbo_environmental_damage", "0", cvarFlags)
 
-		roles.Jimbo.cvExtremeDmgChecks = CreateConVar("ttt2_jimbo_extreme_dmg_checks", 0, cvarFlags)
+		roles.JIMBO.cvExtremeDmgChecks = CreateConVar("ttt2_jimbo_extreme_dmg_checks", 0, cvarFlags)
 
 		roles.JIMBO.cvMinToTrick = CreateConVar("ttt2_jimbo_min_to_trick", 3, cvarFlags)
 		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 9, cvarFlags)
@@ -239,7 +239,7 @@ if SERVER then
 		-- Handle the killed Jimbo's revival
 		roles.JIMBO.Revive(victim, true)
 
-		roles.JIMBO.SpawnConfetti(victim, math.floor(80 + (roles.JIMBO.currentScore * 8) * 0.8))
+		roles.JIMBO.SpawnConfetti(victim, math.min(math.floor(80 + (roles.JIMBO.currentScore * 8) * 0.8), 255))
 
 		--TODO - event for successful trick?
 		roles.JIMBO.currentScore = roles.JIMBO.currentScore + 1
@@ -264,6 +264,10 @@ if CLIENT then
 		JIMBO_DATA.currentScore = net.ReadUInt(8)
 		JIMBO_DATA.targetScore = net.ReadUInt(8)
 		JIMBO_DATA.requestedScores = false
+	end)
+
+	net.Receive("TTT2JimboWin", function()
+		surface.PlaySound("ttt2/jimbo_win.mp3")
 	end)
 
 	hook.Add("TTT2UpdateSubrole", "JimboRoleSync", function(_, __, SubRole)

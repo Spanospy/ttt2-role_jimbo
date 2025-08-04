@@ -1,11 +1,19 @@
--- following code by Jenssons. I just removed the redundant sound :) (no seriously, why does it have the sound when it's emitted from the function that sends the message)
+-- following code by Jenssons. I just added my own sound code :)
 
 local confetti = Material("confetti.png")
 
 net.Receive("TTT2JimboConfetti", function()
 	local ent = net.ReadEntity()
+	local useJimboSounds = net.ReadBool()
+	local pitch = net.ReadUInt(8)
 
 	if not IsValid(ent) then return end
+
+	if useJimboSounds then
+		ent:EmitSound("ttt2/jimbo_mult.mp3", 90, pitch)
+	else
+		ent:EmitSound("ttt2/birthdayparty.mp3", 75, pitch)
+	end
 
 	local pos = ent:GetPos() + Vector(0, 0, ent:OBBMaxs().z)
 
