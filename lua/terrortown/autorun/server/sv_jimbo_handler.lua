@@ -1,6 +1,7 @@
 util.AddNetworkString("TTT2SyncJimboStats")
 util.AddNetworkString("TTT2RequestJimboStats")
 util.AddNetworkString("TTT2JimboConfetti")
+util.AddNetworkString("TTT2JimboWin")
 
 util.PrecacheSound("ttt2/jimbo_mult.mp3")
 util.PrecacheSound("ttt2/jimbo_win.mp3")
@@ -79,24 +80,29 @@ function roles.JIMBO.SyncScores(plys)
 end
 
 function roles.JIMBO.SpawnConfetti(ply, pitch)
+
 	if roles.JIMBO.cvJimboConfetti:GetBool() then
+
+		local useJimboSounds = roles.JIMBO.cvJimboSounds:GetBool()
+
 		net.Start("TTT2JimboConfetti")
 		net.WriteEntity(ply)
-		net.WriteBool(roles.JIMBO.cvJimboSounds:GetBool())
-		net.WriteUInt(pitch, 8)
+		net.WriteBool(useJimboSounds)
+		net.WriteUInt((useJimboSounds and pitch) or 100, 8)
 		net.Broadcast()
-	end
 
-	if roles.JIMBO.cvJimboSounds:GetBool() then
-		ply:EmitSound("ttt2/jimbo_mult.mp3", 75, pitch)
-	else
-		ply:EmitSound("ttt2/birthdayparty.mp3", 75, pitch)
+		if roles.JIMBO.cvJimboSounds:GetBool() then
+			ply:EmitSound("ttt2/jimbo_mult.mp3", 75, pitch)
+		else
+			ply:EmitSound("ttt2/birthdayparty.mp3", 75, 100)
+		end
 	end
 end
 
 function roles.JIMBO.DoWin()
 	if roles.JIMBO.cvJimboSounds:GetBool() then
 		net.Start("TTT2JimboWin")
+		net.WriteBool(roles.JIMBO.cvJimboSounds:GetBool())
 		net.Broadcast()
 	end
 end

@@ -67,7 +67,7 @@ if SERVER then
 		if roles.JIMBO.shouldWin then
 			roles.JIMBO.shouldWin = false
 
-			--TODO - override the win title box to reflect jimbo's win?
+			roles.JIMBO.DoWin()
 
 			return TEAM_JESTER
 		end
@@ -267,7 +267,34 @@ if CLIENT then
 	end)
 
 	net.Receive("TTT2JimboWin", function()
-		surface.PlaySound("ttt2/jimbo_win.mp3")
+
+		local useJimboSounds = net.ReadBool()
+		if useJimboSounds then
+			surface.PlaySound("ttt2/jimbo_win.mp3")
+		end
+
+		local L = LANG.GetLanguageTableReference(LANG.ActiveLanguage)
+
+		-- Store the original strings
+		L["hilite_win_" .. roles.JESTER.defaultTeam .. "_orig"] = LANG.TryTranslation("hilite_win_" .. roles.JESTER.defaultTeam)
+		L["win_" .. roles.JESTER.defaultTeam .. "_orig"] = LANG.TryTranslation("win_" .. roles.JESTER.defaultTeam .. "_" .. roles.JIMBO.abbr)
+
+		-- temporarily override them for Jimbo's Win
+		L["hilite_win_" .. roles.JESTER.defaultTeam] = LANG.TryTranslation("hilite_win_" .. roles.JESTER.defaultTeam .. "_" .. roles.JIMBO.abbr)
+		L["win_" .. roles.JESTER.defaultTeam] = LANG.TryTranslation("win_" .. roles.JESTER.defaultTeam .. "_" .. roles.JIMBO.abbr)
+
+		JIMBO_DATA.JimboWon = true
+	end)
+
+	hook.Add("TTTBeginRound", "JimboReset", function()
+		if JIMBO_DATA and JIMBO_DATA.JimboWon then
+			-- reset the hack we did at the end of last round
+			-- TODO: add edge case for if language gets changed between round end and round start?
+			local L = LANG.GetLanguageTableReference(LANG.ActiveLanguage)
+			L["hilite_win_" .. roles.JESTER.defaultTeam] = LANG.TryTranslation("hilite_win_" .. roles.JESTER.defaultTeam .. "_orig")
+			L["win_" .. roles.JESTER.defaultTeam] = LANG.TryTranslation("win_" .. roles.JESTER.defaultTeam .. "_orig")
+			JIMBO_DATA.JimboWon = false
+		end
 	end)
 
 	hook.Add("TTT2UpdateSubrole", "JimboRoleSync", function(_, __, SubRole)

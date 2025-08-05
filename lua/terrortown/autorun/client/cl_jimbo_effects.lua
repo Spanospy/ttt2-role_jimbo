@@ -10,7 +10,7 @@ net.Receive("TTT2JimboConfetti", function()
 	if not IsValid(ent) then return end
 
 	if useJimboSounds then
-		ent:EmitSound("ttt2/jimbo_mult.mp3", 90, pitch)
+		ent:EmitSound("ttt2/jimbo_mult.mp3", 75, pitch)
 	else
 		ent:EmitSound("ttt2/birthdayparty.mp3", 75, pitch)
 	end

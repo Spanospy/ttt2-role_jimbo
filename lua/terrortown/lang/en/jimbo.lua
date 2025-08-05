@@ -15,7 +15,7 @@ Jimbo wins if they get killed enough times and their killer's death causes the r
 
 -- ROLE SETTINGS LANGUAGE STRINGS
 L["label_jimbo_sounds"] = "Jimbo uses Balatro sounds"
-L["label_jimbo_confetti"] = "Confetti spawns from a killed Jimbo"
+L["label_jimbo_confetti"] = "Confetti & sound spawns from a killed Jimbo"
 L["label_jimbo_entity_damage"] = "Jimbo can damage entities"
 L["label_jimbo_environmental_damage"] = "Jimbo receives environmental damage"
 L["label_jimbo_extreme_dmg_checks"] = "Prevent Jimbo from damaging players indirectly (EXPERIMENTAL)"
@@ -34,3 +34,5 @@ L["label_button_jimbo_swapper_button"] = "Auto-populate"
 -- ROLE-EXCLUSIVE GAMEPLAY LANGUAGE STRINGS
 L["notify_jimbo_killer"] = "You killed Jimbo!"
 L["hud_jimbo_target_met"] = "Steal the final death to win!"
+L["hilite_win_" .. roles.JESTER.defaultTeam .. "_" .. roles.JIMBO.abbr] = "JIMBO WON"
+L["win_" .. roles.JESTER.defaultTeam .. "_" .. roles.JIMBO.abbr] = "Jimbo has won!"
