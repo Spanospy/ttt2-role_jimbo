@@ -3,15 +3,16 @@ local L = LANG.GetLanguageTableReference("en")
 -- GENERAL ROLE LANGUAGE STRINGS
 L[roles.JIMBO.name] = "Jimbo"
 L["info_popup_" .. roles.JIMBO.name] = [[
-You are Jimbo! Cause some chaos and trick everyone into killing you.
-Every time you are killed, you and your killer will be revived as Jimbo!
-Trick enough terrorists, and you might even have a shot at stealing the round win!!]]
+You are Jimbo! Cause some chaos and trick them all into killing you.
+You will revive when killed, but your killer will suffer the consequences.
+Trick enough terrorists and steal the final death to win!]]
 L["body_found_" .. roles.JIMBO.abbr] = "They were Jimbo!?"
 L["search_role_" .. roles.JIMBO.abbr] = "This person was Jimbo!?"
 L["target_" .. roles.JIMBO.name] = "Jimbo"
 L["ttt2_desc_" .. roles.JIMBO.name] = [[
-Jimbo is a Jester/Swapper role that will resurrect themselves and their killer as Jimbo.
-Jimbo wins if they get killed enough times and their killer's death causes the round to end!]]
+Jimbo is a Jester/Swapper role that will resurrect themselves when killed.
+Their goal is to trick other players into killing them - multiple times!
+Jimbo wins if they get killed enough times and their last killer's death causes the round to end.]]
 
 -- ROLE SETTINGS LANGUAGE STRINGS
 L["label_jimbo_sounds"] = "Jimbo uses Balatro sounds"
