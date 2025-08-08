@@ -43,6 +43,7 @@ function ROLE:Initialize()
 		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 9, cvarFlags)
 		roles.JIMBO.cvPctToTrick = CreateConVar("ttt2_jimbo_pct_to_trick", 0.6, cvarFlags)
 		roles.JIMBO.cvFixToTrick = CreateConVar("ttt2_jimbo_fix_to_trick", -1, cvarFlags)
+		roles.JIMBO.cvFinalDeath = CreateConVar("ttt2_jimbo_steal_final_death", 1, cvarFlags)
 
 		roles.JIMBO.cvKillerHealth = CreateConVar("ttt2_jimbo_killer_health", "100", cvarFlags)
 		roles.JIMBO.cvKillerDelay = CreateConVar("ttt2_jimbo_killer_delay", "3", cvarFlags)
@@ -142,6 +143,12 @@ if SERVER then
 
 		-- Jimbo(s) must have caused enough direct deaths
 		if roles.JIMBO.currentScore < roles.JIMBO.targetScore then return end
+
+		-- If Jimbo is configured to not need to steal the final death, team Jester wins.
+		if roles.JIMBO.cvFinalDeath:GetBool() ~= true then
+			roles.JIMBO.shouldWin = true
+			return
+		end
 
 		--If a Jimbo is alive, and one or fewer OTHER teams live, team Jester wins.
 
@@ -263,6 +270,7 @@ if CLIENT then
 	net.Receive("TTT2SyncJimboStats", function()
 		JIMBO_DATA.currentScore = net.ReadUInt(8)
 		JIMBO_DATA.targetScore = net.ReadUInt(8)
+		JIMBO_DATA.needFinalSteal = net.ReadBool()
 		JIMBO_DATA.requestedScores = false
 	end)
 
@@ -432,6 +440,11 @@ if CLIENT then
 			min = -1,
 			max = 32,
 			decimal = 0
+		})
+
+		form:MakeCheckBox({
+			serverConvar = "ttt2_jimbo_steal_final_death",
+			label = "label_jimbo_steal_final_death"
 		})
 
 	end

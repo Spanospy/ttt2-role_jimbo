@@ -112,7 +112,7 @@ if CLIENT then -- CLIENT
 				net.SendToServer()
 				JIMBO_DATA.requestedScores = true
 			end
-		elseif JIMBO_DATA.currentScore >= JIMBO_DATA.targetScore then
+		elseif JIMBO_DATA.currentScore >= JIMBO_DATA.targetScore and JIMBO_DATA.needFinalSteal then
 			draw.AdvancedText(
 				LANG.TryTranslation("hud_jimbo_target_met"),
 				"PureSkinBar",

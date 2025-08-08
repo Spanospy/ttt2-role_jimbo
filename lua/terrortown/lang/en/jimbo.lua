@@ -29,6 +29,7 @@ L["label_jimbo_min_to_trick"] = "Lower limit of players to be killed by to win"
 L["label_jimbo_max_to_trick"] = "Upper limit of players to be killed by to win"
 L["label_jimbo_pct_to_trick"] = "Percentage of players to be killed by to win"
 L["label_jimbo_fix_to_trick"] = "Fixed amount of players to be killed by to win"
+L["label_jimbo_steal_final_death"] = "Require Jimbo to steal the final death to win"
 L["label_jimbo_swapper_button"] = "Populate settings based on Swapper"
 L["label_button_jimbo_swapper_button"] = "Auto-populate"
 

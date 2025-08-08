@@ -75,6 +75,7 @@ function roles.JIMBO.SyncScores(plys)
     net.Start("TTT2SyncJimboStats")
 	net.WriteUInt(roles.JIMBO.currentScore, 8)
 	net.WriteUInt(roles.JIMBO.targetScore, 8)
+	net.WriteBool(roles.JIMBO.cvFinalDeath:GetBool())
 	net.Send(jimbos)
 
 end
