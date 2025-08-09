@@ -255,7 +255,8 @@ if SERVER then
 		JimboCheckForWin()
 
 		local useJimboSounds = roles.JIMBO.cvJimboSounds:GetBool()
-		if useJimboSounds and roles.JIMBO.shouldWin == false then
+		local confettiOn = roles.JIMBO.cvJimboConfetti:GetBool()
+		if useJimboSounds and roles.JIMBO.shouldWin == false and confettiOn == false then
 			-- We want the attacker & victim to hear the mult sound, even if confetti is off.
 			net.Start("TTT2JimboMult")
 			net.Send({attacker, victim})
