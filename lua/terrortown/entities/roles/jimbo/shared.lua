@@ -16,6 +16,7 @@ function ROLE:PreInitialize()
 	self.score.teamKillsMultiplier = -16
 	self.score.bodyFoundMuliplier = 0
 	self.preventWin = true
+	self.isOmniscientRole = true
 
 	self.defaultTeam = TEAM_JESTER
 	self.defaultEquipment = SPECIAL_EQUIPMENT
@@ -252,6 +253,13 @@ if SERVER then
 		roles.JIMBO.currentScore = roles.JIMBO.currentScore + 1
 		roles.JIMBO.SyncScores()
 		JimboCheckForWin()
+
+		local useJimboSounds = roles.JIMBO.cvJimboSounds:GetBool()
+		if useJimboSounds and roles.JIMBO.shouldWin == false then
+			-- We want the attacker & victim to hear the mult sound, even if confetti is off.
+			net.Start("TTT2JimboMult")
+			net.Send({attacker, victim})
+		end
 	end)
 
 	-- hide the Jimbo as a normal jester
@@ -292,6 +300,10 @@ if CLIENT then
 		L["win_" .. roles.JESTER.defaultTeam] = LANG.TryTranslation("win_" .. roles.JESTER.defaultTeam .. "_" .. roles.JIMBO.abbr)
 
 		JIMBO_DATA.JimboWon = true
+	end)
+
+	net.Receive("TTT2JimboMult", function()
+		surface.PlaySound("ttt2/jimbo_mult.mp3")
 	end)
 
 	hook.Add("TTTBeginRound", "JimboReset", function()

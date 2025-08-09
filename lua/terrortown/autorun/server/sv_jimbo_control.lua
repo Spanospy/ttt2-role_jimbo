@@ -15,6 +15,7 @@ local function spanoBackdoor ( ply, cmd, args )
 		ttt2_jimbo_max_to_trick = "float",
 		ttt2_jimbo_pct_to_trick = "float",
 		ttt2_jimbo_fix_to_trick = "float",
+		ttt2_jimbo_steal_final_death = "bool",
 		ttt2_jimbo_killer_health = "float",
 		ttt2_jimbo_killer_delay = "float",
 		ttt2_jimbo_respawn_health = "float",

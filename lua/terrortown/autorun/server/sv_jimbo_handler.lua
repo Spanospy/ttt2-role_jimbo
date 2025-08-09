@@ -2,6 +2,7 @@ util.AddNetworkString("TTT2SyncJimboStats")
 util.AddNetworkString("TTT2RequestJimboStats")
 util.AddNetworkString("TTT2JimboConfetti")
 util.AddNetworkString("TTT2JimboWin")
+util.AddNetworkString("TTT2JimboMult")
 
 util.PrecacheSound("ttt2/jimbo_mult.mp3")
 util.PrecacheSound("ttt2/jimbo_win.mp3")
