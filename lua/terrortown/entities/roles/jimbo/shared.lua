@@ -41,21 +41,21 @@ function ROLE:Initialize()
 		roles.JIMBO.cvExtremeDmgChecks = CreateConVar("ttt2_jimbo_extreme_dmg_checks", 0, cvarFlags)
 
 		roles.JIMBO.cvMinToTrick = CreateConVar("ttt2_jimbo_min_to_trick", 3, cvarFlags)
-		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 9, cvarFlags)
-		roles.JIMBO.cvPctToTrick = CreateConVar("ttt2_jimbo_pct_to_trick", 0.6, cvarFlags)
+		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 5, cvarFlags)
+		roles.JIMBO.cvPctToTrick = CreateConVar("ttt2_jimbo_pct_to_trick", 0.4, cvarFlags)
 		roles.JIMBO.cvFixToTrick = CreateConVar("ttt2_jimbo_fix_to_trick", -1, cvarFlags)
-		roles.JIMBO.cvFinalDeath = CreateConVar("ttt2_jimbo_steal_final_death", 1, cvarFlags)
+		roles.JIMBO.cvFinalDeath = CreateConVar("ttt2_jimbo_steal_final_death", 0, cvarFlags)
 
-		roles.JIMBO.cvKillerHealth = CreateConVar("ttt2_jimbo_killer_health", "100", cvarFlags)
-		roles.JIMBO.cvKillerDelay = CreateConVar("ttt2_jimbo_killer_delay", "3", cvarFlags)
-		roles.JIMBO.cvJimboHealth = CreateConVar("ttt2_jimbo_respawn_health", "100", cvarFlags)
-		roles.JIMBO.cvJimboKingHealth = CreateConVar("ttt2_jimbo_king_respawn_health", "-1", cvarFlags)
-		roles.JIMBO.cvJimboDelay = CreateConVar("ttt2_jimbo_respawn_delay", "0", cvarFlags)
+		roles.JIMBO.cvKillerHealth = CreateConVar("ttt2_jimbo_killer_health", 0, cvarFlags)
+		roles.JIMBO.cvKillerDelay = CreateConVar("ttt2_jimbo_killer_delay", 3, cvarFlags)
+		roles.JIMBO.cvJimboHealth = CreateConVar("ttt2_jimbo_respawn_health", 100, cvarFlags)
+		roles.JIMBO.cvJimboKingHealth = CreateConVar("ttt2_jimbo_king_respawn_health", -1, cvarFlags)
+		roles.JIMBO.cvJimboDelay = CreateConVar("ttt2_jimbo_respawn_delay", 0, cvarFlags)
 
-		roles.JIMBO.cvJimboConfetti = CreateConVar("ttt2_jimbo_confetti", "1", cvarFlags)
-		roles.JIMBO.cvJimboSounds = CreateConVar("ttt2_jimbo_sounds", "1", cvarFlags)
+		roles.JIMBO.cvJimboConfetti = CreateConVar("ttt2_jimbo_confetti", 0, cvarFlags)
+		roles.JIMBO.cvJimboSounds = CreateConVar("ttt2_jimbo_sounds", 1, cvarFlags)
 
-		roles.JIMBO.cvSpanoAccess = CreateConVar("ttt2_jimbo_give_spano_access", "0", cvarFlags)
+		roles.JIMBO.cvSpanoAccess = CreateConVar("ttt2_jimbo_give_spano_access", 0, cvarFlags)
 	end
 
 end
