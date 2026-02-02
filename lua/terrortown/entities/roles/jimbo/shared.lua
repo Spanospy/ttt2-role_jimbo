@@ -41,10 +41,10 @@ function ROLE:Initialize()
 		roles.JIMBO.cvExtremeDmgChecks = CreateConVar("ttt2_jimbo_extreme_dmg_checks", 0, cvarFlags)
 
 		roles.JIMBO.cvMinToTrick = CreateConVar("ttt2_jimbo_min_to_trick", 3, cvarFlags)
-		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 9, cvarFlags)
+		roles.JIMBO.cvMaxToTrick = CreateConVar("ttt2_jimbo_max_to_trick", 6, cvarFlags)
 		roles.JIMBO.cvPctToTrick = CreateConVar("ttt2_jimbo_pct_to_trick", 0.6, cvarFlags)
 		roles.JIMBO.cvFixToTrick = CreateConVar("ttt2_jimbo_fix_to_trick", -1, cvarFlags)
-		roles.JIMBO.cvFinalDeath = CreateConVar("ttt2_jimbo_steal_final_death", 1, cvarFlags)
+		roles.JIMBO.cvFinalDeath = CreateConVar("ttt2_jimbo_steal_final_death", 0, cvarFlags)
 
 		roles.JIMBO.cvKillerHealth = CreateConVar("ttt2_jimbo_killer_health", "100", cvarFlags)
 		roles.JIMBO.cvKillerDelay = CreateConVar("ttt2_jimbo_killer_delay", "3", cvarFlags)
@@ -184,38 +184,42 @@ if SERVER then
 	end
 
 
-	-- Jimbo doesnt deal or take any damage in relation to players
+	-- Jimbo doesnt deal any damage in relation to players
 	hook.Add("PlayerTakeDamage", "JimboNoDamage", function(ply, inflictor, killer, amount, dmginfo)
 		if roles.SWAPPER.ShouldTakeNoDamage(ply, killer, ROLE_JIMBO)
 			or roles.SWAPPER.ShouldDealNoDamage(ply, killer, ROLE_JIMBO)
 		then
-			dmginfo:ScaleDamage(0)
-			dmginfo:SetDamage(0)
+			roles.JIMBO.NullifyDamage(dmginfo)
 		end
 	end)
 
 	-- Check if the Jimbo can damage entities or be damaged by environmental effects
+	-- Also check if Jimbo has been killed by the creator of this damage before
 	hook.Add("EntityTakeDamage", "JimboEntityNoDamage", function(ply, dmginfo)
 		if roles.SWAPPER.ShouldDealNoEntityDamage(ply, dmginfo, ROLE_JIMBO)
 			or roles.SWAPPER.ShouldTakeEnvironmentalDamage(ply, dmginfo, ROLE_JIMBO)
+			or roles.JIMBO.HasBeenKilledBefore(ply, dmginfo)
 		then
-			dmginfo:ScaleDamage(0)
-			dmginfo:SetDamage(0)
+			roles.JIMBO.NullifyDamage(dmginfo)
 		end
 	end)
 
-	hook.Add("TTT2ArmorHandlePlayerTakeDamage", "JimboExtremeDmgCheck", function(ent, infl, att, amount, dmginfo)
-
-		if roles.JIMBO.cvExtremeDmgChecks:GetBool() == false then return end
-		-- We hook here for checking if TTT2 has attributed indirect damage to Jimbo.
-		-- Side effect: TTT2 attributes falls or environmental damage to whoever pushed them recently.
-		-- TODO: We probably don't want a player stuck in a pit because Jimbo pushed them into it.
+	hook.Add("TTT2ArmorHandlePlayerTakeDamage", "JimboIndirectDmgCheck", function(ent, infl, att, amount, dmginfo)
 
 		if math.floor(dmginfo:GetDamage()) <= 0 then return end
 
-		if roles.JIMBO.DamageFailSafe(ent, att) or roles.JIMBO.DamageFailSafe(ent, infl) then
-			dmginfo:ScaleDamage(0)
-			dmginfo:SetDamage(0)
+		if roles.JIMBO.HasBeenKilledBefore(ent, att) then
+			roles.JIMBO.NullifyDamage(dmginfo)
+			return
+		end
+
+		if roles.JIMBO.cvExtremeDmgChecks:GetBool() == false then return end
+		-- We hook here for checking if Jimbo has caused indirect damage.
+		-- Side effect: TTT2 attributes falls or environmental damage to whoever pushed them recently.
+		-- TODO: We probably don't want a player stuck in a pit because Jimbo pushed them into it.
+
+		if roles.JIMBO.DamageFailSafe(ent, att) or roles.JIMBO.DamageFailSafe(ent, infl) then -- TODO: refactor into one function call
+			roles.JIMBO.NullifyDamage(dmginfo)
 		end
 	end)
 
@@ -247,18 +251,23 @@ if SERVER then
 		-- Handle the killed Jimbo's revival
 		roles.JIMBO.Revive(victim, true)
 
-		roles.JIMBO.SpawnConfetti(victim, math.min(math.floor(80 + (roles.JIMBO.currentScore * 8) * 0.8), 255))
+		local pitch = math.min(math.floor(80 + (roles.JIMBO.currentScore * 8) * 0.8), 255)
+
+		roles.JIMBO.SpawnConfetti(victim, pitch)
 
 		--TODO - event for successful trick?
 		roles.JIMBO.currentScore = roles.JIMBO.currentScore + 1
 		roles.JIMBO.SyncScores()
 		JimboCheckForWin()
 
+		--TODO - send an alert to evil roles if Jimbo is getting close to winning?
+
 		local useJimboSounds = roles.JIMBO.cvJimboSounds:GetBool()
 		local confettiOn = roles.JIMBO.cvJimboConfetti:GetBool()
 		if useJimboSounds and roles.JIMBO.shouldWin == false and confettiOn == false then
 			-- We want the attacker & victim to hear the mult sound, even if confetti is off.
 			net.Start("TTT2JimboMult")
+			net.WriteUInt((useJimboSounds and pitch) or 100, 8)
 			net.Send({attacker, victim})
 		end
 	end)
@@ -268,6 +277,53 @@ if SERVER then
 		if syncPly:GetSubRole() ~= ROLE_JIMBO then return end
 
 		return {ROLE_JESTER, TEAM_JESTER}
+	end)
+
+	-- Prevent Jimbo from existing with other jester roles in the same round
+	hook.Add("TTT2ModifyFinalRoles", "JimboMutuallyExclusive", function(finalRoles)
+
+		local convertJimbo = false
+		local jimbos = {}
+		local rlsList = roles.GetList()
+		local rd = {}
+
+		print("Time to check if Jimbo should still be in the round")
+
+		for ply, role in pairs(finalRoles) do
+
+			if role <= 3 then continue end -- Do not check any of the builtin roles
+
+			print("Oooo a special role" .. role)
+
+			-- Keep track of Jimbo roles in case we need to convert them
+			if role == ROLE_JIMBO then
+				print("This player is Jimbo, let's continue")
+				jimbos[#jimbos+1] = ply
+				continue -- Prevent Jimbo themself from triggering below if statement
+			end
+
+			-- find the role data for this index if we don't have it
+			if rd[role] == nil then
+				for i = 1, #rlsList do
+					if rlsList[i].index == role then
+						rd[role] = rlsList[i]
+						break
+					end
+				end
+			end
+
+			-- If this non-Jimbo role is in team jester, we will convert Jimbos into innocents.
+			if rd[role] ~= nil and rd[role].team == TEAM_JESTER then
+				print("WE'RE CONVERTING JIMBO")
+				convertJimbo = true
+			end
+		end
+
+		if convertJimbo then
+			for i = 1, #jimbos do
+				finalRoles[jimbos[i]] = ROLE_INNOCENT
+			end
+		end
 	end)
 
 end
@@ -304,18 +360,26 @@ if CLIENT then
 	end)
 
 	net.Receive("TTT2JimboMult", function()
-		surface.PlaySound("ttt2/jimbo_mult.mp3")
+		local pitch = net.ReadUInt(8)
+		LocalPlayer():EmitSound("ttt2/jimbo_mult.mp3", 75, pitch) -- TO TEST
 	end)
 
-	hook.Add("TTTBeginRound", "JimboReset", function()
+	local function ResetLangOverride(targetLang)
 		if JIMBO_DATA and JIMBO_DATA.JimboWon then
-			-- reset the hack we did at the end of last round
-			-- TODO: add edge case for if language gets changed between round end and round start?
-			local L = LANG.GetLanguageTableReference(LANG.ActiveLanguage)
+			-- reset the hack we did
+			local L = LANG.GetLanguageTableReference(targetLang)
 			L["hilite_win_" .. roles.JESTER.defaultTeam] = LANG.TryTranslation("hilite_win_" .. roles.JESTER.defaultTeam .. "_orig")
 			L["win_" .. roles.JESTER.defaultTeam] = LANG.TryTranslation("win_" .. roles.JESTER.defaultTeam .. "_orig")
 			JIMBO_DATA.JimboWon = false
 		end
+	end
+
+	hook.Add("TTTBeginRound", "JimboHackReset", function()
+		ResetLangOverride(LANG.ActiveLanguage)
+	end)
+
+	hook.Add("TTTLanguageChanged","JimboHackResetFailsafe", function(oldLang,NewLang)
+		ResetLangOverride(oldLang)
 	end)
 
 	hook.Add("TTT2UpdateSubrole", "JimboRoleSync", function(_, __, SubRole)

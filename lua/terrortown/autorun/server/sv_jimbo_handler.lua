@@ -132,6 +132,23 @@ function roles.JIMBO.CrownKing(plys)
 
 end
 
+function roles.JIMBO.NullifyDamage(dmginfo)
+	dmginfo:ScaleDamage(0)
+	dmginfo:SetDamage(0)
+end
+
+function roles.JIMBO.HasBeenKilledBefore(ply, killer)
+
+	if ply:IsPlayer() ~= true then return false end
+
+	if ply:GetSubRole() ~= ROLE_JIMBO then return false end -- we only track who has killed Jimbo
+
+	if not IsPlayer(killer) then return false end
+
+	if roles.JIMBO.killers[killer:UserID()] == 1 then return true
+	else return false end
+end
+
 net.Receive("TTT2RequestJimboStats", function(len, ply)
 	roles.JIMBO.SyncScores(ply)
 end)
